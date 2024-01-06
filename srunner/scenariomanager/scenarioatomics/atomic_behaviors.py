@@ -2966,7 +2966,7 @@ class LaneChange(WaypointFollower):
                 status = py_trees.common.Status.SUCCESS
         else:
             self._pos_before_lane_change = current_position_actor.transform.location
-
+        
         return status
 
 

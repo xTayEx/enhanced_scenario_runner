@@ -51,12 +51,17 @@ class LangeChangeParameterize(BasicScenario):
         ego_behavior = py_trees.composites.Sequence("ego_seq")
         ego_vehicle_transform: carla.Transform = self.ego_vehicles[0].get_transform()
         target_location = carla.Location(
-            x=ego_vehicle_transform.location.x,
-            y=ego_vehicle_transform.location.y + 30,
+            x=ego_vehicle_transform.location.x - 150,
+            y=ego_vehicle_transform.location.y,
             z=ego_vehicle_transform.location.z,
         )
         ego_behavior.add_child(
-            BasicAgentBehavior(self.ego_vehicles[0], target_location, target_speed=50)
+            BasicAgentBehavior(
+                self.ego_vehicles[0],
+                target_location,
+                name="BasicAgentBehavior",
+                target_speed=int(self.config.other_parameters["behaviors"][0]["target_speed"]),
+            )
         )
         ego_behavior.add_child(Idle(duration=30))
 
@@ -64,14 +69,15 @@ class LangeChangeParameterize(BasicScenario):
         other_behavior.add_child(
             KeepVelocity(
                 self.other_actors[0],
-                5,
+                target_velocity=int(self.config.other_parameters["behaviors"][1]["target_velocity"]),
                 duration=float(
-                    self.config.other_parameters["behaviors"][0]["duration"]
+                    self.config.other_parameters["behaviors"][1]["duration"]
                 ),
                 name="KeepVelocity",
             )
         )
         other_behavior.add_child(LaneChange(self.other_actors[0], direction="left"))
+        other_behavior.add_child(Idle(duration=30))
 
         root.add_child(ego_behavior)
         root.add_child(other_behavior)

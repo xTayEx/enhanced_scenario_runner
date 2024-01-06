@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <scenarios>
-    <scenario name="LangeChangeParameterize_1" type="LangeChangeParameterize" town="Town04">
-        <ego_vehicle x="393.10" y="-228.09" z="0.28" yaw="90" model="vehicle.lincoln.mkz_2017" />
-        <other_actor x="389.56" y="-224.72" z="0.28" yaw="90" model="vehicle.tesla.model3" />
+    <scenario name="LangeChangeParameterize_1" type="LangeChangeParameterize" town="Town03">
+        <ego_vehicle x="214.13" y="-1.69" z="0.28" yaw="180" model="vehicle.lincoln.mkz_2017" />
+        <other_actor x="220.41" y="-5.09" z="0.28" yaw="180" model="vehicle.tesla.model3" />
         <weather cloudiness="0" precipitation="0" precipitation_deposits="0" wind_intensity="0"
             sun_azimuth_angle="0" sun_altitude_angle="75" />
         <behaviors>
-            <behavior name="KeepVelocity" target="other_actor" duration="5" />
+            <behavior name="BasicAgentBehavior" target="ego_actor" target_speed="5"/>
+            <behavior name="KeepVelocity" target="other_actor" duration="5" target_velocity="5"/>
         </behaviors>
     </scenario>
 </scenarios>

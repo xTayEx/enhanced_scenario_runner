@@ -9,6 +9,7 @@
 This module provides the key configuration parameters for an XML-based scenario
 """
 
+from typing import Optional
 import carla
 
 
@@ -99,9 +100,9 @@ class ScenarioConfiguration(object):
         self.ego_vehicles = []
         self.other_actors = []
         self.other_parameters = {}
-        self.town = None
-        self.name = None
-        self.type = None
+        self.town: Optional[str] = None
+        self.name: Optional[str] = None
+        self.type: Optional[str] = None
         self.route = None
         self.agent = None
         self.weather = carla.WeatherParameters(sun_altitude_angle=70, cloudiness=50)

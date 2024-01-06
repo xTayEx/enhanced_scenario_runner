@@ -13,12 +13,14 @@ It must not be modified and is for reference only!
 from __future__ import print_function
 import sys
 import time
+from typing import List, Optional
 
 import py_trees
 
 from srunner.autoagents.agent_wrapper import AgentWrapper
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.result_writer import ResultOutputProvider
+from srunner.scenariomanager.hook import HookBase
 from srunner.scenariomanager.timer import GameTime
 from srunner.scenariomanager.watchdog import Watchdog
 
@@ -108,15 +110,17 @@ class ScenarioManager(object):
         self.other_actors = scenario.other_actors
 
         # To print the scenario tree uncomment the next line
-        # py_trees.display.render_dot_tree(self.scenario_tree)
+        py_trees.display.render_dot_tree(self.scenario_tree)
 
         if self._agent is not None:
             self._agent.setup_sensors(self.ego_vehicles[0], self._debug_mode)
 
-    def run_scenario(self):
+    def run_scenario(self, hooks: Optional[List[HookBase]] = None):
         """
         Trigger the start of the scenario and wait for it to finish/fail
         """
+        if hooks is None:
+            hooks = []
         print("ScenarioManager: Running scenario {}".format(self.scenario_tree.name))
         self.start_system_time = time.time()
         start_game_time = GameTime.get_time()
@@ -134,6 +138,9 @@ class ScenarioManager(object):
                     timestamp = snapshot.timestamp
             if timestamp:
                 self._tick_scenario(timestamp)
+                for hook in hooks:
+                    _ = hook.execute()
+        
 
         self.cleanup()
 

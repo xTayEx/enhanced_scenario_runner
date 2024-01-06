@@ -35,6 +35,7 @@ import carla
 from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfiguration
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
+from srunner.scenariomanager.hooks.distance_hook import DistanceHook
 from srunner.scenarios.open_scenario import OpenScenario
 from srunner.scenarios.route_scenario import RouteScenario
 from srunner.tools.scenario_parser import ScenarioConfigurationParser
@@ -44,7 +45,7 @@ from srunner.scenarios.osc2_scenario import OSC2Scenario
 from srunner.scenarioconfigs.osc2_scenario_configuration import OSC2ScenarioConfiguration
 
 # Version of scenario_runner
-VERSION = '0.9.13'
+VERSION = '0.9.15'
 
 
 class ScenarioRunner(object):
@@ -156,8 +157,10 @@ class ScenarioRunner(object):
             sys.path.insert(0, os.path.dirname(scenario_file))
             scenario_module = importlib.import_module(module_name)
 
+            all_classes = inspect.getmembers(scenario_module, inspect.isclass)
+            local_classes = [(name, c) for name, c in all_classes if c.__module__ == scenario_module.__name__]
             # And their members of type class
-            for member in inspect.getmembers(scenario_module, inspect.isclass):
+            for member in local_classes:
                 if scenario in member:
                     return member[1]
 
@@ -424,7 +427,8 @@ class ScenarioRunner(object):
 
             # Load scenario and run it
             self.manager.load_scenario(scenario, self.agent_instance)
-            self.manager.run_scenario()
+            actors = self.world.get_actors().filter("vehicle.*")
+            self.manager.run_scenario(hooks=[DistanceHook(actors)])
 
             # Provide outputs if required
             self._analyze_scenario(config)

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<scenarios>
+    <scenario name="Agent" type="AgentScenario" town="Town04">
+        <ego_vehicle x="284.4" y="16.4" z="2.5" yaw="180" model="vehicle.lincoln.mkz_2017" />
+        <weather cloudiness="0" precipitation="0" precipitation_deposits="0" wind_intensity="0" sun_azimuth_angle="0" sun_altitude_angle="75" />
+        <behaviors_duration>
+            <behavior_duration behavior="keep_lane" duration="10" />
+            <behavior_duration behavior="xxx" duration="123"/>
+        </behaviors_duration>
+    </scenario>
+</scenarios>

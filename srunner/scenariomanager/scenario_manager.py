@@ -15,6 +15,7 @@ import sys
 import time
 from typing import List, Optional
 
+import carla
 import py_trees
 
 from srunner.autoagents.agent_wrapper import AgentWrapper
@@ -131,24 +132,24 @@ class ScenarioManager(object):
 
         while self._running:
             timestamp = None
-            world = CarlaDataProvider.get_world()
+            world: Optional[carla.World] = CarlaDataProvider.get_world()
             if world:
                 snapshot = world.get_snapshot()
-                if snapshot:
-                    timestamp = snapshot.timestamp
+                timestamp = snapshot.timestamp if snapshot is not None else None
             if timestamp:
                 self._tick_scenario(timestamp)
+                if world is None:
+                    continue
+                actors = world.get_actors().filter("vehicle.*")
                 for hook in hooks:
-                    _ = hook.execute()
-        
+                    hook.execute(actors)
 
         self.cleanup()
 
         self.end_system_time = time.time()
         end_game_time = GameTime.get_time()
 
-        self.scenario_duration_system = self.end_system_time - \
-            self.start_system_time
+        self.scenario_duration_system = self.end_system_time - self.start_system_time
         self.scenario_duration_game = end_game_time - start_game_time
 
         if self.scenario_tree.status == py_trees.common.Status.FAILURE:
@@ -222,9 +223,11 @@ class ScenarioManager(object):
             return True
 
         for criterion in criteria:
-            if (not criterion.optional and
-                    criterion.test_status != "SUCCESS" and
-                    criterion.test_status != "ACCEPTABLE"):
+            if (
+                not criterion.optional
+                and criterion.test_status != "SUCCESS"
+                and criterion.test_status != "ACCEPTABLE"
+            ):
                 failure = True
                 result = "FAILURE"
             elif criterion.test_status == "ACCEPTABLE":

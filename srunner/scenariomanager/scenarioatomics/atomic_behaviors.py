@@ -2420,7 +2420,7 @@ class BasicAgentBehavior(AtomicBehavior):
     The behavior terminates after reaching the target_location (within 2 meters)
     """
 
-    def __init__(self, actor, target_location=None, plan=None, target_speed=20, opt_dict=None, name="BasicAgentBehavior"):
+    def __init__(self, actor, target_location=None, plan=None, target_speed=20.0, opt_dict=None, name="BasicAgentBehavior"):
         """
         Setup actor and maximum steer value
         """

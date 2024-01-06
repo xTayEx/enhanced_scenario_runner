@@ -60,7 +60,7 @@ class LangeChangeParameterize(BasicScenario):
                 self.ego_vehicles[0],
                 target_location,
                 name="BasicAgentBehavior",
-                target_speed=int(self.config.other_parameters["behaviors"][0]["target_speed"]),
+                target_speed=float(self.config.other_parameters["behaviors"][0]["target_speed"]),
             )
         )
         ego_behavior.add_child(Idle(duration=30))
@@ -69,7 +69,7 @@ class LangeChangeParameterize(BasicScenario):
         other_behavior.add_child(
             KeepVelocity(
                 self.other_actors[0],
-                target_velocity=int(self.config.other_parameters["behaviors"][1]["target_velocity"]),
+                target_velocity=float(self.config.other_parameters["behaviors"][1]["target_velocity"]),
                 duration=float(
                     self.config.other_parameters["behaviors"][1]["duration"]
                 ),

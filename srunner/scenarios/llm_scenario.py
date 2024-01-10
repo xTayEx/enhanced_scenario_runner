@@ -15,6 +15,7 @@ from srunner.scenariomanager.scenarioatomics.atomic_behaviors import (
 from srunner.scenariomanager.scenarioatomics.atomic_criteria import CollisionTest
 from srunner.scenarios.basic_scenario import BasicScenario
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
+from utils import normalize_xml_attr
 
 
 class LLMScenario(BasicScenario):
@@ -62,34 +63,59 @@ class LLMScenario(BasicScenario):
     def _create_behavior_helper(
         self, cur_node: Element, cur_container: Union[Selector, Sequence, Parallel]
     ):
-        if not cur_node:
+        if len(cur_node) == 0:
             return
         for child in cur_node:
+            child.attrib = normalize_xml_attr(attrs=child.attrib)
             if child.tag in {"Sequence", "Selector", "Parallel"}:
                 saved_container = cur_container
-                cur_container_class = self._get_node_class_by_name(child.tag)
-                if child.tag == "Parallel":
-                    cur_container = cur_container_class(
-                        Policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ONE
-                    )
-                else:
-                    cur_container = cur_container_class()
+                cur_container = self._get_node_class_by_name(child.tag)(**child.attrib)
                 self._create_behavior_helper(child, cur_container)
                 cur_container = saved_container
             else:
-                cur_container.add_child(
-                    self._get_node_class_by_name(child.tag, **child.attrib)
+                child_node = self._get_node_class_by_name(child.tag)(
+                    actor=self.other_actors[0], **child.attrib
                 )
+                cur_container.add_child(child_node)
                 self._create_behavior_helper(child, cur_container)
 
     def _create_behavior(self):
         with open(self.bt_path, "r", encoding="utf-8") as bt_f:
             bt_xml = bt_f.read()
 
+        root_container = Parallel(policy=py_trees.common.ParallelPolicy.SUCCESS_ON_ALL)
         xml_instance = ET.fromstring(bt_xml)
-        return self._create_behavior_helper(
-            xml_instance, self._get_node_class_by_name(xml_instance.tag)
+
+        ego_behavior = py_trees.composites.Sequence("ego_seq")
+        ego_vehicle_transform: carla.Transform = self.ego_vehicles[0].get_transform()
+        target_location = carla.Location(
+            x=ego_vehicle_transform.location.x - 180,
+            y=ego_vehicle_transform.location.y,
+            z=ego_vehicle_transform.location.z,
         )
+        ego_behavior.add_child(
+            BasicAgentBehavior(
+                self.ego_vehicles[0],
+                target_location,
+                name="BasicAgentBehavior",
+                target_speed=20,
+            )
+        )
+
+        # create other vehicle's behavior tree
+        xml_instance.attrib = normalize_xml_attr(attrs=xml_instance.attrib)
+
+        other_behavior: Union[
+            Sequence, Selector, Parallel
+        ] = self._get_node_class_by_name(xml_instance.tag)(**xml_instance.attrib)
+        self._create_behavior_helper(xml_instance, other_behavior)
+        other_behavior.add_child(Idle(30))
+
+        root_container.add_child(ego_behavior)
+        root_container.add_child(other_behavior)
+        py_trees.display.print_ascii_tree(root_container)
+
+        return root_container
 
     def _create_test_criteria(self):
         criteria = []

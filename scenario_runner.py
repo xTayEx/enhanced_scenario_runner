@@ -515,7 +515,7 @@ class ScenarioRunner(object):
         # Load the scenario configurations provided in the config file
         scenario_configurations = (
             ScenarioConfigurationParser.parse_scenario_configuration(
-                self._args.scenario, self._args.configFile
+                self._args.scenario or self._args.llm, self._args.configFile
             )
         )
         if not scenario_configurations:
@@ -671,7 +671,7 @@ def main():
     parser.add_argument("--openscenario2", help="Provide an openscenario2 definition")
     parser.add_argument("--route", help="Run a route as a scenario", type=str)
     parser.add_argument("--llm", help="Run llm generated scenario", type=str)
-    parser.add_argument("--bt-path", help="Path to behavior tree xml specification", type=str)
+    parser.add_argument("--bt-path", help="Path to behavior tree xml specification", type=str, default="")
     parser.add_argument(
         "--route-id",
         help="Run a specific route inside that 'route' file",
@@ -717,6 +717,7 @@ def main():
 
     parser.add_argument("--debug", action="store_true", help="Run with debug output")
     parser.add_argument(
+        "--reloadWorld",
         action="store_true",
         help="Reload the CARLA world before starting a scenario (default=True)",
     )
@@ -755,6 +756,7 @@ def main():
         and not arguments.openscenario
         and not arguments.route
         and not arguments.openscenario2
+        and not arguments.llm
     ):
         print("Please specify either a scenario or use the route mode\n\n")
         parser.print_help(sys.stdout)

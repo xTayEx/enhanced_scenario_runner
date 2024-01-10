@@ -443,6 +443,17 @@ class ScenarioRunner(object):
                     osc2_file=self._args.openscenario2,
                     timeout=100000,
                 )
+            elif self._args.llm:
+                assert self._args.bt_path, "Path to behavior tree xml file must be specified when running an LLM scenario!"
+                scenario_class = self._get_scenario_class_or_fail(config.type) 
+                scenario = scenario_class(
+                    world=self.world,
+                    ego_vehicles=self.ego_vehicles,
+                    config=config,
+                    randomize=self._args.randomize,
+                    debug_mode=self._args.debug,
+                    bt_path=self._args.bt_path,
+                )
             else:
                 scenario_class = self._get_scenario_class_or_fail(config.type)
                 scenario = scenario_class(
@@ -659,6 +670,8 @@ def main():
     )
     parser.add_argument("--openscenario2", help="Provide an openscenario2 definition")
     parser.add_argument("--route", help="Run a route as a scenario", type=str)
+    parser.add_argument("--llm", help="Run llm generated scenario", type=str)
+    parser.add_argument("--bt-path", help="Path to behavior tree xml specification", type=str)
     parser.add_argument(
         "--route-id",
         help="Run a specific route inside that 'route' file",
@@ -704,7 +717,6 @@ def main():
 
     parser.add_argument("--debug", action="store_true", help="Run with debug output")
     parser.add_argument(
-        "--reloadWorld",
         action="store_true",
         help="Reload the CARLA world before starting a scenario (default=True)",
     )
@@ -727,7 +739,6 @@ def main():
     )
 
     arguments = parser.parse_args()
-    # pylint: enable=line-too-long
 
     OSC2Helper.wait_for_ego = arguments.waitForEgo
 

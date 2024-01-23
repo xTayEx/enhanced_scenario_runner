@@ -4,8 +4,8 @@
         <other_actor model="vehicle.tesla.model3" x="220.41" y="-5.09" yaw="180" z="0.28" />
         <weather cloudiness="0" precipitation="0" precipitation_deposits="0" sun_altitude_angle="75" sun_azimuth_angle="0" wind_intensity="0" />
         <behaviors>
-            <behavior name="BasicAgentBehavior" target="ego_actor" target_speed="42.8" />
-            <behavior duration="28.3" name="KeepVelocity" target="other_actor" target_velocity="11.1" />
+            <behavior name="BasicAgentBehavior" target="ego_actor" target_speed="65.0" />
+            <behavior duration="25.799999999999944" name="KeepVelocity" target="other_actor" target_velocity="45.5" />
         </behaviors>
     </scenario>
 </scenarios>

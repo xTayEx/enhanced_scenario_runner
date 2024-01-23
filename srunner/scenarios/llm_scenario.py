@@ -69,12 +69,14 @@ class LLMScenario(BasicScenario):
             child.attrib = normalize_xml_attr(attrs=child.attrib)
             if child.tag in {"Sequence", "Selector", "Parallel"}:
                 saved_container = cur_container
-                cur_container = self._get_node_class_by_name(child.tag)(**child.attrib)
+                cur_container = self._get_node_class_by_name(child.tag)(
+                    **normalize_xml_attr(child.attrib)
+                )
                 self._create_behavior_helper(child, cur_container)
                 cur_container = saved_container
             else:
                 child_node = self._get_node_class_by_name(child.tag)(
-                    actor=self.other_actors[0], **child.attrib
+                    actor=self.other_actors[0], **normalize_xml_attr(child.attrib)
                 )
                 cur_container.add_child(child_node)
                 self._create_behavior_helper(child, cur_container)
@@ -93,22 +95,26 @@ class LLMScenario(BasicScenario):
             y=ego_vehicle_transform.location.y,
             z=ego_vehicle_transform.location.z,
         )
+        ego_param = normalize_xml_attr(
+            xml_instance.find(".//ego/BasicAgentBehavior").attrib
+        )
         ego_behavior.add_child(
             BasicAgentBehavior(
                 self.ego_vehicles[0],
                 target_location,
                 name="BasicAgentBehavior",
-                target_speed=20,
+                **ego_param,
             )
         )
 
         # create other vehicle's behavior tree
-        xml_instance.attrib = normalize_xml_attr(attrs=xml_instance.attrib)
-
+        other_behavior_tree = xml_instance.find(".//other/*")
         other_behavior: Union[
             Sequence, Selector, Parallel
-        ] = self._get_node_class_by_name(xml_instance.tag)(**xml_instance.attrib)
-        self._create_behavior_helper(xml_instance, other_behavior)
+        ] = self._get_node_class_by_name(other_behavior_tree.tag)(
+            **normalize_xml_attr(other_behavior_tree.attrib)
+        )
+        self._create_behavior_helper(other_behavior_tree, other_behavior)
         other_behavior.add_child(Idle(30))
 
         root_container.add_child(ego_behavior)

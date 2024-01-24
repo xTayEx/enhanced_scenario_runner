@@ -115,7 +115,7 @@ class LLMScenario(BasicScenario):
             **normalize_xml_attr(other_behavior_tree.attrib)
         )
         self._create_behavior_helper(other_behavior_tree, other_behavior)
-        other_behavior.add_child(Idle(30))
+        other_behavior.add_child(Idle(10))
 
         root_container.add_child(ego_behavior)
         root_container.add_child(other_behavior)
@@ -126,9 +126,12 @@ class LLMScenario(BasicScenario):
     def _create_test_criteria(self):
         criteria = []
 
-        for ego in self.ego_vehicles:
-            collision_criterion = CollisionTest(ego)
-            criteria.append(collision_criterion)
+        collision_criterion = CollisionTest(
+            self.ego_vehicles[0],
+            other_actor=self.other_actors[0],
+            terminate_on_failure=True,
+        )
+        criteria.append(collision_criterion)
 
         return criteria
 

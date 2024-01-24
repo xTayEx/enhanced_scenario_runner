@@ -305,10 +305,13 @@ class ScenarioRunner(object):
             self._args.output, filename, junit_filename, json_filename
         ):
             print("All scenario tests were passed successfully!")
+            return True
         else:
             print("Not all scenario tests were successful")
             if not (self._args.output or filename or junit_filename):
                 print("Please run with --output for further information")
+
+            return False
 
     def _record_criteria(self, criteria, name):
         """
@@ -484,7 +487,7 @@ class ScenarioRunner(object):
             self.manager.run_scenario(hooks=hooks)
 
             # Provide outputs if required
-            self._analyze_scenario(config)
+            analyze_result = self._analyze_scenario(config)
 
             # Remove all actors, stop the recorder and save all criterias (if needed)
             scenario.remove_all_actors()
@@ -494,7 +497,7 @@ class ScenarioRunner(object):
                     self.manager.scenario.get_criteria(), recorder_name
                 )
 
-            result = True
+            result = True and analyze_result
 
         except Exception as e:  # pylint: disable=broad-except
             traceback.print_exc()
@@ -804,4 +807,6 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    code = main()
+    print(code)
+    sys.exit(code)

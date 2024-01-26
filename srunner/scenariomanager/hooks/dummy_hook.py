@@ -2,8 +2,8 @@ from random import choice
 
 from srunner.scenariomanager.hooks.hook import HookBase
 
-class DummyHook(HookBase):
 
+class DummyHook(HookBase):
     def __init__(self) -> None:
         pass
 

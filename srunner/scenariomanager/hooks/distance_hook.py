@@ -19,7 +19,7 @@ class DistanceHook(HookBase):
             + (location1.z - location2.z) ** 2
         )
 
-    def execute(self, actors):
+    def execute(self, actors: carla.ActorList):
         for first_actor_idx in range(len(actors)):
             for second_actor_idx in range(first_actor_idx + 1, len(actors)):
                 self._results.append(

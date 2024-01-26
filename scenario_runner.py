@@ -805,6 +805,7 @@ def main():
         result = scenario_runner.run([[distance_hook, dump_info_hook]])
         with open("min_distance.txt", "w") as f:
             f.write(str(min(distance_hook.results)))
+        print(dump_info_hook.results)
     except Exception:  # pylint: disable=broad-except
         traceback.print_exc()
 

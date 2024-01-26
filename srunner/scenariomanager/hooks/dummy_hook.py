@@ -1,6 +1,6 @@
 from random import choice
 
-from srunner.scenariomanager.hook import HookBase
+from srunner.scenariomanager.hooks.hook import HookBase
 
 class DummyHook(HookBase):
 

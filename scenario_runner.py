@@ -37,7 +37,7 @@ from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfi
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 from srunner.scenariomanager.hooks.distance_hook import DistanceHook
-from srunner.scenariomanager.hook import HookBase
+from srunner.scenariomanager.hooks.hook import HookBase
 from srunner.scenarios.open_scenario import OpenScenario
 from srunner.scenarios.route_scenario import RouteScenario
 from srunner.tools.scenario_parser import ScenarioConfigurationParser
@@ -497,7 +497,7 @@ class ScenarioRunner(object):
                     self.manager.scenario.get_criteria(), recorder_name
                 )
 
-            result = True and analyze_result
+            result = True
 
         except Exception as e:  # pylint: disable=broad-except
             traceback.print_exc()

@@ -37,6 +37,7 @@ from srunner.scenarioconfigs.openscenario_configuration import OpenScenarioConfi
 from srunner.scenariomanager.carla_data_provider import CarlaDataProvider
 from srunner.scenariomanager.scenario_manager import ScenarioManager
 from srunner.scenariomanager.hooks.distance_hook import DistanceHook
+from srunner.scenariomanager.hooks.dump_info_hook import DumpInfoHook
 from srunner.scenariomanager.hooks.hook import HookBase
 from srunner.scenarios.open_scenario import OpenScenario
 from srunner.scenarios.route_scenario import RouteScenario
@@ -447,8 +448,10 @@ class ScenarioRunner(object):
                     timeout=100000,
                 )
             elif self._args.llm:
-                assert self._args.bt_path, "Path to behavior tree xml file must be specified when running an LLM scenario!"
-                scenario_class = self._get_scenario_class_or_fail(config.type) 
+                assert (
+                    self._args.bt_path
+                ), "Path to behavior tree xml file must be specified when running an LLM scenario!"
+                scenario_class = self._get_scenario_class_or_fail(config.type)
                 scenario = scenario_class(
                     world=self.world,
                     ego_vehicles=self.ego_vehicles,
@@ -674,7 +677,12 @@ def main():
     parser.add_argument("--openscenario2", help="Provide an openscenario2 definition")
     parser.add_argument("--route", help="Run a route as a scenario", type=str)
     parser.add_argument("--llm", help="Run llm generated scenario", type=str)
-    parser.add_argument("--bt-path", help="Path to behavior tree xml specification", type=str, default="")
+    parser.add_argument(
+        "--bt-path",
+        help="Path to behavior tree xml specification",
+        type=str,
+        default="",
+    )
     parser.add_argument(
         "--route-id",
         help="Run a specific route inside that 'route' file",
@@ -793,7 +801,8 @@ def main():
     try:
         scenario_runner = ScenarioRunner(arguments)
         distance_hook = DistanceHook()
-        result = scenario_runner.run([[distance_hook]])
+        dump_info_hook = DumpInfoHook()
+        result = scenario_runner.run([[distance_hook, dump_info_hook]])
         with open("min_distance.txt", "w") as f:
             f.write(str(min(distance_hook.results)))
     except Exception:  # pylint: disable=broad-except

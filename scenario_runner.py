@@ -15,6 +15,7 @@ and finally triggers the scenario execution.
 
 from __future__ import print_function
 
+import pickle
 import glob
 import traceback
 import argparse
@@ -805,7 +806,10 @@ def main():
         result = scenario_runner.run([[distance_hook, dump_info_hook]])
         with open("min_distance.txt", "w") as f:
             f.write(str(min(distance_hook.results)))
-        print(dump_info_hook.results)
+        
+        with open("coordinate.pkl", "wb") as f:
+            pickle.dump(dump_info_hook.results, f) 
+
     except Exception:  # pylint: disable=broad-except
         traceback.print_exc()
 

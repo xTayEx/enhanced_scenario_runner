@@ -98,6 +98,8 @@ class LLMScenario(BasicScenario):
         ego_param = normalize_xml_attr(
             xml_instance.find(".//ego/BasicAgentBehavior").attrib
         )
+        # Fucking carla! Why you use m/s everywhere, but use km/h in BasicAgentBehavior? 
+        ego_param["target_speed"] *= 3.6
         ego_behavior.add_child(
             BasicAgentBehavior(
                 self.ego_vehicles[0],
@@ -115,7 +117,7 @@ class LLMScenario(BasicScenario):
             **normalize_xml_attr(other_behavior_tree.attrib)
         )
         self._create_behavior_helper(other_behavior_tree, other_behavior)
-        other_behavior.add_child(Idle(10))
+        other_behavior.add_child(Idle(2))
 
         root_container.add_child(ego_behavior)
         root_container.add_child(other_behavior)

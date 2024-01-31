@@ -802,13 +802,34 @@ def main():
     try:
         scenario_runner = ScenarioRunner(arguments)
         distance_hook = DistanceHook()
-        dump_info_hook = DumpInfoHook()
+        dump_info_hook = DumpInfoHook(use_offset=True)
         result = scenario_runner.run([[distance_hook, dump_info_hook]])
         with open("min_distance.txt", "w") as f:
             f.write(str(min(distance_hook.results)))
-        
-        with open("coordinate.pkl", "wb") as f:
-            pickle.dump(dump_info_hook.results, f) 
+
+        model3_coordinates = [
+            x for x in dump_info_hook.results if "model3" in list(x.keys())[0]
+        ]
+        mkz_2017_coordinates = [
+            x for x in dump_info_hook.results if "mkz_2017" in list(x.keys())[0]
+        ]
+
+        x_offset = mkz_2017_coordinates[0]["vehicle.lincoln.mkz_2017"]["x"]
+        y_offset = mkz_2017_coordinates[0]["vehicle.lincoln.mkz_2017"]["y"]
+
+
+        with open("./mkz_2017_trajectory.txt", "w") as mkz_2017_f:
+            for item in mkz_2017_coordinates:
+                # hack: use +0.0 to convert -0.0 to 0.0
+                mkz_2017_f.write(
+                    f"{round(item['vehicle.lincoln.mkz_2017']['x'] - x_offset, 2) + 0.0} {round(item['vehicle.lincoln.mkz_2017']['y'] - y_offset, 2) + 0.0}\n"
+                )
+
+        with open("./model3_trajectory.txt", "w") as model3_f:
+            for item in model3_coordinates:
+                model3_f.write(
+                    f"{round(item['vehicle.tesla.model3']['x'] - x_offset, 2) + 0.0} {round(item['vehicle.tesla.model3']['y'] - y_offset, 2) + 0.0}\n"
+                )
 
     except Exception:  # pylint: disable=broad-except
         traceback.print_exc()
@@ -822,5 +843,4 @@ def main():
 
 if __name__ == "__main__":
     code = main()
-    print(code)
     sys.exit(code)

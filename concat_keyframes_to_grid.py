@@ -1,6 +1,8 @@
 from pathlib import Path
 import math
+import subprocess
 from typing import List
+
 from PIL import Image
 
 def concat_to_grid(keyframes: List[Image.Image]):
@@ -28,6 +30,7 @@ def concat_to_grid(keyframes: List[Image.Image]):
 
 
 keyframe_path = Path("keyframes")
+subprocess.run(["rm", "-rf", "./grid/*"], check=True)
 keyframes = []
 keyframe_files = sorted(keyframe_path.iterdir())
 

@@ -806,7 +806,7 @@ def main():
         result = scenario_runner.run([[distance_hook, dump_info_hook]])
         with open("min_distance.txt", "w") as f:
             f.write(str(min(distance_hook.results)))
-
+        
         model3_coordinates = [
             x for x in dump_info_hook.results if "model3" in list(x.keys())[0]
         ]

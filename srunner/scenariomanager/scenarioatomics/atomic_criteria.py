@@ -350,6 +350,8 @@ class CollisionTest(Criterion):
         """
         Cleanup sensor
         """
+        with open("collision_status.txt", "w", encoding="utf-8") as collision_status_f:
+            collision_status_f.write(f"{self.test_status}")
         if self._collision_sensor is not None:
             self._collision_sensor.stop()
             self._collision_sensor.destroy()

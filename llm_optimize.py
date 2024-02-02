@@ -15,9 +15,12 @@ from Katna.writer import KeyFrameDiskWriter
 from PIL import Image
 import jinja2
 from icecream import ic
+import google.generativeai as genai
 
 from utils import check_process_running, encode_image
 
+genai.configure(api_key="AIzaSyDKPBU8X_QQoud-TnSYV5ZKPEw7R7Vsiqs")
+gemini_model = genai.GenerativeModel("gemini-pro-vision")
 client = carla.Client("localhost", 2000)
 
 API_KEY = "sk-wneAEhU4CRoiDszaAcD16f7a04704010A34cB98cC2DaEc8a"
@@ -262,7 +265,53 @@ def gpt_optimize():
 
 
 def gemini_optimize():
-    pass
+    chat = gemini_model.start_chat()
+    # startup
+    initial_state_image = Image.open("./initial_state.jpg")
+    with open(
+        "llm_optimizer_startup_prompt_gemini.j2", "r", encoding="utf-8"
+    ) as startup_prompt_f:
+        startup_prompt = startup_prompt_f.read()
+
+    generation_config = genai.GenerationConfig(max_output_tokens=1000)
+    startup_response = chat.send_message(
+        [startup_prompt, initial_state_image],
+        generation_config=generation_config,
+    ).text.replace("```", "")
+
+    ic(startup_response)
+    startup_response_json = json.loads(startup_response)
+    startup_ego_speed = startup_response_json["speedA"]
+    startup_other_speed = startup_response_json["speedB"]
+    startup_duration = startup_response_json["duration"]
+
+    grid_image = simulate(
+        startup_ego_speed, startup_other_speed, startup_duration
+    )
+
+    # # feedback
+    with open(
+        "llm_optimizer_feedback_prompt.j2", "r", encoding="utf-8"
+    ) as feedback_prompt_f:
+        feedback_prompt_template = feedback_prompt_f.read()
+
+    while True:
+        feedback_prompt = jinja_env.from_string(
+            feedback_prompt_template
+        ).render(
+            collision_status="Collision" if has_collision() else "No collision"
+        )
+        feedback_response = chat.send_message(
+            [feedback_prompt, grid_image], generation_config=generation_config
+        ).text.replace("```", "")
+        ic(feedback_response)
+        feedback_response_json = json.loads(feedback_response)
+        new_ego_speed = feedback_response_json["speedA"]
+        new_other_speed = feedback_response_json["speedB"]
+        new_duration = feedback_response_json["duration"]
+
+        grid_image = simulate(new_ego_speed, new_other_speed, new_duration)
 
 
-gpt_optimize()
+# gpt_optimize()
+gemini_optimize()

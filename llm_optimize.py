@@ -57,7 +57,7 @@ def draw_overview(carla_client: carla.Client):
             time.sleep(1)
 
     camera = world.spawn_actor(camera_bp, transform, attach_to=ego)
-    camera.listen(lambda image: save_video(image))
+    camera.listen(save_video)
 
     while True:
         try:
@@ -116,8 +116,8 @@ def simulate(ego_speed, other_speed, other_gostraight_duration):
     tree.write(xml_path)
 
     cmd = (
-        f"python3 scenario_runner.py --llm LLM_1 --bt-path"
-        f" /home/xtayex/Downloads/enhanced_scenario_runner/test_cases_behavior_tree/test.xml"
+        "python3 scenario_runner.py --llm LLM_1 --bt-path"
+        " /home/xtayex/Downloads/enhanced_scenario_runner/test_cases_behavior_tree/test.xml"
     )
 
     while True:
@@ -142,8 +142,9 @@ def simulate(ego_speed, other_speed, other_gostraight_duration):
             )
             time.sleep(30)
 
+
 def _ic_output_to_file(debug_log: str):
-    with open("ic.log", "a") as log_f:
+    with open("ic.log", "a", encoding="utf-8") as log_f:
         log_f.write(f"{debug_log}\n")
 
 
@@ -160,7 +161,9 @@ def send_request(messages: List[Dict]):
     retry_time = 3
     for _ in range(retry_time):
         try:
-            response = requests.post(BASE_URL, headers=headers, json=payload)
+            response = requests.post(
+                BASE_URL, headers=headers, json=payload, timeout=1000
+            )
             break
         except requests.exceptions.ConnectionError:
             print("ConnectionError. We will retry it after 1s.")
@@ -176,7 +179,7 @@ def send_request(messages: List[Dict]):
 def has_collision():
     with open("collision_status.txt", "r", encoding="utf-8") as f:
         status = f.read()
-    
+
     print(status)
 
     return status == "FAILURE"
@@ -184,7 +187,9 @@ def has_collision():
 
 def gpt_optimize():
     # startup
-    with open("llm_optimizer_startup_prompt.j2", "r") as startup_prompt_f:
+    with open(
+        "llm_optimizer_startup_prompt.j2", "r", encoding="utf-8"
+    ) as startup_prompt_f:
         startup_prompt = startup_prompt_f.read()
 
     startup_message = [
@@ -204,9 +209,10 @@ def gpt_optimize():
     )
 
     # feedback
-    with open("llm_optimizer_feedback_prompt.j2") as feedback_prompt_f:
+    with open(
+        "llm_optimizer_feedback_prompt.j2", "r", encoding="utf-8"
+    ) as feedback_prompt_f:
         feedback_prompt_template = feedback_prompt_f.read()
-
 
     feedback_messages = [
         *startup_message,
@@ -216,23 +222,27 @@ def gpt_optimize():
         },
     ]
     while True:
-        feedback_prompt = jinja_env.from_string(feedback_prompt_template).render(
+        feedback_prompt = jinja_env.from_string(
+            feedback_prompt_template
+        ).render(
             collision_status="Collision" if has_collision() else "No collision"
         )
-        feedback_messages.append({
-            "role": "user",
-            "content": [
-                {"type": "text", "text": feedback_prompt},
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": (
-                            f"data:image/jpeg;base64,{encode_image(grid_image)}"
-                        )
+        feedback_messages.append(
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": feedback_prompt},
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": (
+                                f"data:image/jpeg;base64,{encode_image(grid_image)}"
+                            )
+                        },
                     },
-                },
-            ],
-        })
+                ],
+            }
+        )
         response_message = send_request(messages=feedback_messages)
         response_content = response_message["content"]
         response_content_json = json.loads(response_content)
@@ -243,10 +253,12 @@ def gpt_optimize():
         grid_image = simulate(
             feedback_ego_speed, feedback_other_speed, feedback_duration
         )
-        feedback_messages.append({
-            "role": "assistant",
-            "content": [{"type": "text", "text": response_content}],
-        })
+        feedback_messages.append(
+            {
+                "role": "assistant",
+                "content": [{"type": "text", "text": response_content}],
+            }
+        )
 
 
 def gemini_optimize():

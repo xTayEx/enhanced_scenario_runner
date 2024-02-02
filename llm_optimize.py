@@ -182,7 +182,7 @@ def has_collision():
     return status == "FAILURE"
 
 
-def llm_optimize():
+def gpt_optimize():
     # startup
     with open("llm_optimizer_startup_prompt.j2", "r") as startup_prompt_f:
         startup_prompt = startup_prompt_f.read()
@@ -249,4 +249,8 @@ def llm_optimize():
         })
 
 
-llm_optimize()
+def gemini_optimize():
+    pass
+
+
+gpt_optimize()

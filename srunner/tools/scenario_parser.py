@@ -19,17 +19,20 @@ from srunner.scenarioconfigs.scenario_configuration import (
     ScenarioConfiguration,
     ActorConfigurationData,
 )
-from srunner.scenarioconfigs.route_scenario_configuration import RouteConfiguration
+from srunner.scenarioconfigs.route_scenario_configuration import (
+    RouteConfiguration,
+)
 
 
 class ScenarioConfigurationParser(object):
-
     """
     Pure static class providing access to parser methods for scenario configuration files (*.xml)
     """
 
     @staticmethod
-    def parse_scenario_configuration(scenario_name, additional_config_file_name):
+    def parse_scenario_configuration(
+        scenario_name, additional_config_file_name
+    ):
         """
         Parse all scenario configuration files at srunner/examples and the additional
         config files, providing a list of ScenarioConfigurations @return
@@ -48,7 +51,9 @@ class ScenarioConfigurationParser(object):
         scenario_configurations = []
 
         list_of_config_files = glob.glob(
-            "{}/srunner/examples/*.xml".format(os.getenv("SCENARIO_RUNNER_ROOT", "./"))
+            "{}/srunner/examples/*.xml".format(
+                os.getenv("SCENARIO_RUNNER_ROOT", "./")
+            )
         )
         if additional_config_file_name != "":
             list_of_config_files.append(additional_config_file_name)
@@ -72,16 +77,20 @@ class ScenarioConfigurationParser(object):
                 config.name = scenario_config_name
                 config.type = scenario_config_type
 
-                for elem in scenario.getchildren():
+                for elem in scenario.iter():
                     # Elements with special parsing
                     if elem.tag == "ego_vehicle":
                         config.ego_vehicles.append(
                             ActorConfigurationData.parse_from_node(elem, "hero")
                         )
-                        config.trigger_points.append(config.ego_vehicles[-1].transform)
+                        config.trigger_points.append(
+                            config.ego_vehicles[-1].transform
+                        )
                     elif elem.tag == "other_actor":
                         config.other_actors.append(
-                            ActorConfigurationData.parse_from_node(elem, "scenario")
+                            ActorConfigurationData.parse_from_node(
+                                elem, "scenario"
+                            )
                         )
                     elif elem.tag == "weather":
                         for weather_attrib in elem.attrib:
@@ -103,14 +112,16 @@ class ScenarioConfigurationParser(object):
 
                     # Any other possible element, add it as a config attribute
                     else:
-                        other_parameter_children = elem.getchildren()
+                        other_parameter_children = list(elem)
                         if len(other_parameter_children) == 0:
                             continue
-                        
+
                         behaviors_attr = []
-                        for child in elem.getchildren():
+                        for child in elem.iter():
                             behaviors_attr.append(child.attrib)
-                        config.other_parameters.update({"behaviors": behaviors_attr})
+                        config.other_parameters.update(
+                            {"behaviors": behaviors_attr}
+                        )
 
                 scenario_configurations.append(config)
         return scenario_configurations
@@ -122,10 +133,14 @@ class ScenarioConfigurationParser(object):
         """
 
         list_of_config_files = glob.glob(
-            "{}/srunner/examples/*.xml".format(os.getenv("SCENARIO_RUNNER_ROOT", "./"))
+            "{}/srunner/examples/*.xml".format(
+                os.getenv("SCENARIO_RUNNER_ROOT", "./")
+            )
         )
         list_of_config_files += glob.glob(
-            "{}/srunner/examples/*.xosc".format(os.getenv("SCENARIO_RUNNER_ROOT", "./"))
+            "{}/srunner/examples/*.xosc".format(
+                os.getenv("SCENARIO_RUNNER_ROOT", "./")
+            )
         )
         if additional_config_file_name != "":
             list_of_config_files.append(additional_config_file_name)

@@ -1,3 +1,4 @@
+import os
 import math
 import subprocess
 import time
@@ -19,12 +20,13 @@ import google.generativeai as genai
 
 from utils import check_process_running, encode_image
 
-genai.configure(api_key="AIzaSyDKPBU8X_QQoud-TnSYV5ZKPEw7R7Vsiqs")
+GENAI_API_KEY = os.environ["GENAI_API_KEY"]
+genai.configure(api_key=GENAI_API_KEY)
 gemini_model = genai.GenerativeModel("gemini-pro-vision")
 client = carla.Client("localhost", 2000)
 
-API_KEY = "sk-wneAEhU4CRoiDszaAcD16f7a04704010A34cB98cC2DaEc8a"
-BASE_URL = "https://oneapi.xty.app/v1/chat/completions"
+OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
+OPENAI_BASE_URL = "https://oneapi.xty.app/v1/chat/completions"
 jinja_env = jinja2.Environment()
 
 param_examples = []
@@ -154,7 +156,7 @@ def _ic_output_to_file(debug_log: str):
 def send_request(messages: List[Dict]):
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
     }
     payload = {
         "model": "gpt-4-vision-preview",
@@ -165,7 +167,7 @@ def send_request(messages: List[Dict]):
     for _ in range(retry_time):
         try:
             response = requests.post(
-                BASE_URL, headers=headers, json=payload, timeout=1000
+                OPENAI_BASE_URL, headers=headers, json=payload, timeout=1000
             )
             break
         except requests.exceptions.ConnectionError:
